@@ -21,7 +21,6 @@ class youtubeAPI:
     def __init__(self, scope: list[str] = None, client_secret_file: str = None, log: bool = True) -> None:
         #os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
         self.scope: list[str] = ["https://www.googleapis.com/auth/youtube.force-ssl"] if scope == None else scope
-        breakpoint()
         self.service_name: str = "youtube"
         self.api_verson: str = "v3"
         self.client_secret_file: str = "client_secret.json" if client_secret_file == None else client_secret_file
