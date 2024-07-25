@@ -75,13 +75,16 @@ class youtubeAPI:
         return response
     
     def downloadCaptions(self, videoID: str):
-        request = self.client.captions().download(id=videoID, tlang="en")
+        # Grab the caption resource for the specified videoId
+        captionRequest = self.client.captions().list(part="id", videoId=videoID)
+        response = captionRequest.execute()
+        # Pull the captions using the caption resource id
+        request = self.client.captions().download(id=response["items"][0]["id"], tlang="en")
         with open(f"captions/{videoID}.txt", "w") as file_handle:
             #file_handle = io.FileIO(f"captions/{videoID}.txt")
             download = MediaIoBaseDownload(file_handle, request)
             complete = False
             while not complete:
                 status, complete = download.next_chunk()
-                breakpoint()
             self.updateQuota("CAPTION_DOWNLOAD")
 
