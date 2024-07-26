@@ -12,7 +12,8 @@ def main():
     # client.downloadCaptions("eVli-tstM5E")
     # client.apiShutdown() 
 
-    ytd.downloadCaptions("eVli-tstM5E")
+    # ytd.downloadCaptions("eVli-tstM5E")
+    ytd.randomYoutubeID(1)
 
 if __name__ == "__main__":
     main()
