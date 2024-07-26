@@ -12,8 +12,9 @@ def main():
     # client.downloadCaptions("eVli-tstM5E")
     # client.apiShutdown() 
 
-    # ytd.downloadCaptions("eVli-tstM5E")
-    ytd.randomYoutubeID(1)
+    relatedIDs = ytd.randomYoutubeID("fcfQkxwz4Oo")
+    for id in relatedIDs: 
+        ytd.downloadCaptions("id")
 
 if __name__ == "__main__":
     main()

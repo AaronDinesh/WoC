@@ -1,21 +1,48 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 
-import undetected_chromedriver as uc
+import requests
+from bs4 import BeautifulSoup
+import re
+import json
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 
+def randomYoutubeID(video_id: str):
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    related_ids = []
+    
+    # Find the script tag containing the related videos data
+    scripts = soup.find_all('script')
+    for script in scripts:
+        if 'var ytInitialData = ' in script.text:
+            data = script.text.split('var ytInitialData = ')[1].split(';</script>')[0]
 
-# Add uBlock Origin to the Chrome Driver
-chop = webdriver.ChromeOptions()
-chop.add_extension('CJPALHDLNBPAFIAMEJDNHCPHJBKEIAGM_1_57_0_0.crx')
-chop.add_argument('--headless=new')
-chop.add_argument('--start-maximized')
-driver = webdriver.Chrome(options = chop)
+            # Clean the data
+            data = data.strip()
+            if data.endswith(';'):
+                data = data[:-1]
+        
+            
+            try:
+                json_data = json.loads(data)
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON: {e}")
+                continue
+            
+            # Extract related video IDs
+            try:
+                related_videos = json_data['contents']['twoColumnWatchNextResults']['secondaryResults']['secondaryResults']['results']
+                for video in related_videos:
+                    if 'compactVideoRenderer' in video:
+                        video_id = video['compactVideoRenderer']['videoId']
+                        related_ids.append(video_id)
+                
+            except KeyError as e:
+                print(f"Error accessing JSON structure: {e}")
+                continue
 
-def randomYoutubeID(i: int):
-    driver.get('youtube.com')
+    return related_ids
 
 def downloadCaptions(videoID: str):
     # Retrieving a list of dictionaries of the transcripts
