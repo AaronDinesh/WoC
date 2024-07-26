@@ -1,2 +1,4 @@
 client_secret.json
 *.txt
+__pycache__/
+captions/

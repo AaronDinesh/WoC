@@ -4,10 +4,16 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
+from tqdm import tqdm
 
-
-def randomYoutubeID(video_id: str):
-    url = f"https://www.youtube.com/watch?v={video_id}"
+def randomYoutubeID(video_id: str = None):
+    
+    if video_id == None:
+        url = f"https://www.youtube.com/"
+    else:
+        url = f"https://www.youtube.com/watch?v={video_id}"
+    
+    
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     related_ids = []
@@ -53,9 +59,8 @@ def downloadCaptions(videoID: str):
         with open(f"captions/{videoID}.txt", "w", encoding="utf-8") as f:
         
             # iterating through each element of list srt
-            for i in srt:
+            for i in tqdm(srt, desc=f"Downloading ID: {videoID}"):
                 # writing each element of srt on a new line
                 f.write("{}\n".format(i["text"]))
-    
     except:
         print("Error! Skipping videoID " + videoID)
