@@ -2,7 +2,7 @@ from pydoc import cli
 import networkx as nx
 from youtubeAPI import youtubeAPI
 import woc_utils as wu
-import transcriptYoutubeAPI as tya
+import youtubeData as ytd
 
 def main():
     # wu.chunker("test.txt")
@@ -12,7 +12,7 @@ def main():
     # client.downloadCaptions("eVli-tstM5E")
     # client.apiShutdown() 
 
-    tya.downloadCaptions("eVli-tstM5E")
+    ytd.downloadCaptions("eVli-tstM5E")
 
 if __name__ == "__main__":
     main()
