@@ -45,13 +45,17 @@ def randomYoutubeID(video_id: str):
     return related_ids
 
 def downloadCaptions(videoID: str):
-    # Retrieving a list of dictionaries of the transcripts
-    srt = YouTubeTranscriptApi.get_transcript(videoID)
+    try:
+        # Retrieving a list of dictionaries of the transcript
+        srt = YouTubeTranscriptApi.get_transcript(videoID)
 
-    # Writing the transcripts to a .txt file
-    with open(f"captions/{videoID}.txt", "w", encoding="utf-8") as f:
-    
+        # Writing the transcripts to a .txt file
+        with open(f"captions/{videoID}.txt", "w", encoding="utf-8") as f:
+        
             # iterating through each element of list srt
-        for i in srt:
-            # writing each element of srt on a new line
-            f.write("{}\n".format(i))
+            for i in srt:
+                # writing each element of srt on a new line
+                f.write("{}\n".format(i["text"]))
+    
+    except:
+        print("Error! Skipping videoID " + videoID)

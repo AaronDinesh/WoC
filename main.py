@@ -14,7 +14,7 @@ def main():
 
     relatedIDs = ytd.randomYoutubeID("fcfQkxwz4Oo")
     for id in relatedIDs: 
-        ytd.downloadCaptions("id")
+        ytd.downloadCaptions(id)
 
 if __name__ == "__main__":
     main()
