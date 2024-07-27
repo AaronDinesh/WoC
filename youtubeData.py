@@ -6,6 +6,7 @@ import re
 import json
 from tqdm import tqdm
 import numpy as np
+import os
 
 def randomYoutubeID(video_id: str = None):
 
@@ -35,40 +36,63 @@ def randomYoutubeID(video_id: str = None):
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 continue
-
-
+            
             # Extract related video IDs
-            try:
-                if video_id == None:
-                    tabs = json_data['contents']['twoColumnBrowseResultsRenderer']['tabs']
+            pattern = r"(?<='videoId': ').*?(?=')"
+            matches = re.findall(pattern, str(json_data))
+            matches = list(set(matches))
+            for match in matches:
+                if (match != video_id and not os.path.exists(f"captions/{match}.txt")):
+                # if (match != video_id):
+                    related_ids.append(match)
 
-                    for tab in tabs:
-                        if len(related_ids) >= 10:
-                            break
+            # print("\nRELATED IDS:")
+            # print(related_ids)
+            # print("\n")
 
 
-                        tab_contents = tab['tabRenderer']['content']['sectionListRenderer']['contents']
-                        for tab_content in tab_contents:
-                            items = tab_content['itemSectionRenderer']['contents']
+            # # Extract related video IDs
+            # try:
+            #     if video_id == None:
+            #         tabs = json_data['contents']['twoColumnBrowseResultsRenderer']['tabs']
 
-                            for item in items:
-                                videos = item['shelfRenderer']['content']['expandedShelfContentsRenderer']['items']
+            #         for tab in tabs:
+            #             if len(related_ids) >= 10:
+            #                 break
 
-                                for video in videos:
-                                    videoID = video['videoRenderer']['videoId']
-                                    related_ids.append(videoID)
-                else:
-                    related_videos = json_data['contents']['twoColumnWatchNextResults']['secondaryResults']['secondaryResults']['results']
-                    for i in range(min(10, len(related_videos))):
-                        if 'compactVideoRenderer' in related_videos[i]:
-                            videoID = related_videos[i]['compactVideoRenderer']['videoId']
-                            related_ids.append(videoID)
 
-            except KeyError as e:
-                print(f"Error accessing JSON structure: {e}")
-                continue
+            #             tab_contents = tab['tabRenderer']['content']['sectionListRenderer']['contents']
+            #             for tab_content in tab_contents:
+            #                 items = tab_content['itemSectionRenderer']['contents']
 
-    return np.random.choice(related_ids, 5, replace=False)
+            #                 for item in items:
+            #                     videos = item['shelfRenderer']['content']['expandedShelfContentsRenderer']['items']
+
+            #                     for video in videos:
+            #                         videoID = video['videoRenderer']['videoId']
+            #                         related_ids.append(videoID)
+            #     else:
+            #         related_videos = json_data['contents']['twoColumnWatchNextResults']['secondaryResults']['secondaryResults']['results']
+            #         for i in range(min(10, len(related_videos))):
+            #             if 'compactVideoRenderer' in related_videos[i]:
+            #                 videoID = related_videos[i]['compactVideoRenderer']['videoId']
+            #                 related_ids.append(videoID)
+
+            # except KeyError as e:
+            #     print(f"Error accessing JSON structure: {e}")
+            #     continue 
+    
+    # if (len(related_ids) == 0):
+    #     print("\nDATA DUMP:")
+    #     print(video_id)
+    #     print("\n")
+    #     print(json_data)
+
+    #     # Writing the transcripts to a .txt file
+    #     with open(f"jsonData.txt", "w", encoding="utf-8") as f:
+    #         f.write(str(json_data))
+
+    return np.random.choice(related_ids, min(5, len(related_ids)), replace=False)
 
 
 def downloadCaptions(videoID: str):

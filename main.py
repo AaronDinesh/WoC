@@ -6,6 +6,8 @@ import youtubeData as ytd
 import fnmatch
 import os
 import numpy as np
+import time
+
 
 def main():
     # wu.chunker("test.txt")
@@ -13,7 +15,9 @@ def main():
     # client = youtubeAPI(client_secret_file="client_secret.json")
     # ret = client.authenticate()
     # client.downloadCaptions("eVli-tstM5E")
-    # client.apiShutdown() 
+    # client.apiShutdown()
+
+    start = time.time()
     
     next_id = "A5w-dEgIU1M"
     
@@ -27,6 +31,9 @@ def main():
         np.concatenate((relatedIDs, ytd.randomYoutubeID()), axis=0)
         
         next_id = str(np.random.choice(relatedIDs, 1 ,replace=False)[0])
+
+    end = time.time()
+    print(end - start)
 
 
 if __name__ == "__main__":
