@@ -48,7 +48,6 @@ def randomYoutubeID(video_id: str = None):
 
 
                         tab_contents = tab['tabRenderer']['content']['sectionListRenderer']['contents']
-                        print("not tab_contents")
                         for tab_content in tab_contents:
                             items = tab_content['itemSectionRenderer']['contents']
 

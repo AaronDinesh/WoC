@@ -24,7 +24,7 @@ def main():
             print(f"ID: {next_id} exists. Skipping...")
 
         relatedIDs = ytd.randomYoutubeID(next_id)
-        relatedIDs += ytd.randomYoutubeID()
+        np.concatenate((relatedIDs, ytd.randomYoutubeID()), axis=0)
         
         next_id = str(np.random.choice(relatedIDs, 1 ,replace=False)[0])
 
