@@ -8,7 +8,7 @@ from tqdm import tqdm
 import numpy as np
 import os
 
-def randomYoutubeID(video_id: str = None):
+def __randomYoutubeID(video_id: str = None):
 
     if video_id == None:
         url = "https://www.youtube.com/feed/trending"
@@ -94,6 +94,11 @@ def randomYoutubeID(video_id: str = None):
 
     return np.random.choice(related_ids, min(5, len(related_ids)), replace=False)
 
+def randomYoutubeID(video_id: str):
+    related_ids = __randomYoutubeID(video_id)
+    np.concatenate((related_ids, __randomYoutubeID()), axis=0)
+
+    return str(np.random.choice(related_ids, 1 ,replace=False)[0])
 
 def downloadCaptions(videoID: str):
     try:
