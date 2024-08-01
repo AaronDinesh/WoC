@@ -5,42 +5,77 @@ import fnmatch
 import os
 import numpy as np
 import time
-from multiprocessing import Process, Array
-from ctypes import c_char_p
+from multiprocessing import Process, Array, Value
 
-work_pool = []
-worker_thread_done = [True, True, True, True]
-
-def manager(worker_thread_done, work_pool) -> None:
-    done = False
-    
-    while not done:
+def manager(worker_thread_done, work_pool, done) -> None:
+    while done.value != 1:
         while len(fnmatch.filter(os.listdir('captions/'), '*.txt')) < 100:
             for i in range(len(work_pool)):
+                
+                # If the thread has no work. Give it work
                 if worker_thread_done[i] == 1:
-                    new_work = ytd.randomYoutubeID(work_pool[i])
+                    
+                    new_work = ytd.randomYoutubeID(work_pool[i].value.decode('utf-8'))
+                    
+                    # All Youtube IDs seem to be 11 chars long. Since we are dealing with fixed size arrays, I assert to enforce this.
+                    assert len(new_work) == 11, "Youtube ID is not 11 chars long"
+                    
+                    # Make sure the work is unique
+                    while os.path.exists(f"captions/{new_work}.txt") and new_work in [x.value.decode('utf-8') for x in work_pool]:
+                        new_work = ytd.randomYoutubeID(new_work)
 
-                    if(not os.path.exists(f"captions/{new_work}.txt") and new_work not in work_pool.to_list()):
+
+                    work_pool[i] = new_work.encode('utf-8')
+                    worker_thread_done[i] = 0
+                        
+
+            # Wait until one of the treads is finished
+            while not np.all(worker_thread_done):
+                time.sleep(0.001)
+        
+        done.value = 1
+        print("Manager is gracefully exiting")
+
+def manager_test(worker_thread_done, work_pool, done) -> None:
+    from string import ascii_lowercase
+
+    idx = 0
+    while done.value != 1:
+        while idx < 100:
+            for i in range(len(work_pool)):
+                if worker_thread_done[i] == 1:
+                    new_work = "".join(np.random.choice(list(ascii_lowercase), 11))
+
+                    if(new_work not in [x for x in work_pool]):
                         # If the thread has no work. Give it some work
-                        work_pool[i] = (new_work).encode('utf-8')
+                        print(f"Work for thread id {i} is {new_work}")
+                        work_pool[i].value = new_work.encode('utf-8')
+                        print(work_pool[i].value.decode('utf-8'))
                         worker_thread_done[i] = 0
 
             # Assign work and then wait until one of the treads is finished
             while not np.all(worker_thread_done):
                 time.sleep(0.001)
-        
-        done = True
+            
+            idx += 1
+        done.value = 1
+       
+        print("Manager is gracefully exiting")
 
+def worker_thread(worker_thread_done, work_pool, thread_id, done) -> None:
+    print(f"Hello from Thread {thread_id}")
+    while done.value != 1:
+        print(f"Thread {thread_id}: My work is {work_pool[thread_id].value}")
+        ytd.downloadCaptions(work_pool[thread_id].value.decode('utf-8'))
+        worker_thread_done[thread_id] = 1
+        print(f"Thread {thread_id}: Finished {work_pool[thread_id].value}. Waiting for new work...")
 
-def worker_thread(worker_thread_done, work_pool, thread_id) -> None:
-    while worker_thread_done[thread_id] == 1:
-        time.sleep(0.001)
-    
-    ytd.downloadCaptions(work_pool[thread_id].decode('utf-8'))
-    
-    print(f"Hello from worker: {thread_id}. My work is {work_pool[thread_id].decode('utf-8')}")
+        while worker_thread_done[thread_id] == 1:
+            time.sleep(0.001)
+            if done.value == 1:
+                break
 
-    worker_thread_done[thread_id] = 1
+    print(f"Thread {thread_id} is gracefully exiting.")
 
 
 def main():
@@ -50,41 +85,34 @@ def main():
     # ret = client.authenticate()
     # client.downloadCaptions("eVli-tstM5E")
     # client.apiShutdown()
-
+    
+    start = time.time()
     processes = []
+    
+    # 'Array' does do some locking in the background
+    # Maybe change it to RawArray and do the locking ourself?
     worker_thread_done = Array('i', [0, 0, 0, 0])
-    work_pool = Array(c_char_p, 4) 
-    work_pool[:] = [b"xxx",b"xxx",b"xxx",b"xxx"]
+    work_pool = [Array('c', 11) for _ in range(4)] 
+    
+    # Initalize the work pool
+    work_pool[0].value = "l0e9i8zXcIs".encode('utf-8') 
+    work_pool[1].value = "kTMEXgxtE4s".encode('utf-8') 
+    work_pool[2].value = "ShmVne51sF4".encode('utf-8') 
+    work_pool[3].value = "zabpcOP7H3U".encode('utf-8')
+
+    done = Value('i', 0) 
+    manager_thread = Process(target=manager, args=(worker_thread_done, work_pool, done,))
+    manager_thread.start()
     for i in range(4):
-        processes.append(Process(target=worker_thread, args=(worker_thread_done, work_pool, i,)))
+        processes.append(Process(target=worker_thread, args=(worker_thread_done, work_pool, i, done,)))
         processes[i].start()
     
 
+    manager_thread.join()
     for p in processes:
         p.join()
     
-    for res in worker_thread_done:
-        print(res)
-        
-    return 0
-
-    start = time.time()
-    
-    next_id = "A5w-dEgIU1M"
-    
-    while len(fnmatch.filter(os.listdir('captions/'), '*.txt')) < 100:
-        if(not os.path.exists(f"captions/{next_id}.txt")):
-            ytd.downloadCaptions(next_id)
-        else:
-            print(f"ID: {next_id} exists. Skipping...")
-
-        relatedIDs = ytd.randomYoutubeID(next_id)
-        np.concatenate((relatedIDs, ytd.randomYoutubeID()), axis=0)
-        
-        next_id = str(np.random.choice(relatedIDs, 1 ,replace=False)[0])
-
-    end = time.time()
-    print(end - start)
+    print(f"Time taken: {time.time()-start}")
 
 
 if __name__ == "__main__":

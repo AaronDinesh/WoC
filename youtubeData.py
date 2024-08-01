@@ -111,7 +111,7 @@ def downloadCaptions(videoID: str):
         with open(f"captions/{videoID}.txt", "w", encoding="utf-8") as f:
 
             # iterating through each element of list srt
-            for i in tqdm(srt, desc=f"Downloading ID: {videoID}"):
+            for i in srt:
                 # writing each element of srt on a new line
                 f.write("{}\n".format(i["text"]))
     except Exception as e:
