@@ -94,7 +94,7 @@ def __randomYoutubeIDs(video_id: str = None):
 
     return np.random.choice(related_ids, min(5, len(related_ids)), replace=False)
 
-def generateRandomYoutubeIDs(video_id: str):
+def generateRandomYoutubeID(video_id: str):
     related_ids = __randomYoutubeIDs(video_id)
     np.concatenate((related_ids, __randomYoutubeIDs()), axis=0)
 

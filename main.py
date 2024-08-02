@@ -14,18 +14,18 @@ def manager(worker_thread_done, work_pool, done) -> None:
                 
                 # If the thread has no work. Give it work
                 if worker_thread_done[i] == 1:
-                    
-                    new_work = ytd.generateRandomYoutubeIDs(work_pool[i].value.decode('utf-8'))
+
+                    new_work = ytd.generateRandomYoutubeID(work_pool[i].value.decode('utf-8'))
                     
                     # All Youtube IDs seem to be 11 chars long. Since we are dealing with fixed size arrays, I assert to enforce this.
                     assert len(new_work) == 11, "Youtube ID is not 11 chars long"
                     
                     # Make sure the work is unique
                     while os.path.exists(f"captions/{new_work}.txt") and new_work in [x.value.decode('utf-8') for x in work_pool]:
-                        new_work = ytd.generateRandomYoutubeIDs(new_work)
+                        new_work = ytd.generateRandomYoutubeID(new_work)
 
+                    work_pool[i].value = new_work.encode('utf-8')
 
-                    work_pool[i] = new_work.encode('utf-8')
                     worker_thread_done[i] = 0
                         
 
