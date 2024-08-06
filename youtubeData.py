@@ -115,4 +115,5 @@ def downloadCaptions(videoID: str):
                 # writing each element of srt on a new line
                 f.write("{}\n".format(i["text"]))
     except Exception as e:
-        print(f"Error: {e}. Skipping videoID " + videoID)
+        # print(f"Error: {e}. Skipping videoID " + videoID)
+        pass
