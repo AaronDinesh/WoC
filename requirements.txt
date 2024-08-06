@@ -52,3 +52,4 @@ typing_extensions==4.12.2
 urllib3==2.2.2
 youtube-transcript-api==0.6.2
 mayavi==4.8.2
+pyqt5==5.15.11
