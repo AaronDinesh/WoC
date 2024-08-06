@@ -1,48 +1,76 @@
-# # Create the data.
-# from numpy import pi, sin, cos, mgrid
-# dphi, dtheta = pi/250.0, pi/250.0
-# [phi,theta] = mgrid[0:pi+dphi*1.5:dphi,0:2*pi+dtheta*1.5:dtheta]
-# m0 = 4; m1 = 3; m2 = 2; m3 = 3; m4 = 6; m5 = 2; m6 = 6; m7 = 4;
-# r = sin(m0*phi)**m1 + cos(m2*phi)**m3 + sin(m4*theta)**m5 + cos(m6*theta)**m7
-# x = r*sin(phi)*cos(theta)
-# y = r*cos(phi)
-# z = r*sin(phi)*sin(theta)
-
-# # View it.
-# from mayavi import mlab
-# s = mlab.mesh(x, y, z)
-# mlab.show()
-
-
-
 from mayavi import mlab
 import numpy as np
-import time
+import woc_utils as wu
+from sentence_transformers import SentenceTransformer
+from sklearn import decomposition
+from os import listdir 
 
-mlab.clf()  # Clear the figure
+class visualAPI:
+    def __init__(self) -> None:
+        self.bubbles = None
+        self.x = None
+        self.y = None
+        self.z = None
+        self.value = None
+        self.files = listdir("./captions/")
+        self.model = SentenceTransformer("all-MiniLM-L6-v2")
+    def setup(self)-> None:
+        # Clear the figure
+        mlab.clf()
 
-# t = np.linspace(0, 20, 200)
-# swirl = mlab.plot3d(np.sin(t), np.sin(t), 0.1*t, t)
+        self.x, self.y, self.z, self.value = np.zeros((4, 1))
+        self.bubbles = mlab.points3d(self.x, self.y, self.z, self.value)
 
-# x, y, z, value = np.random.random((4, 1))
-# bubbles = mlab.points3d(x, y, z, value)
+    @mlab.animate(delay=100)
+    def anim(self) -> None:
+
+        for file in self.files:
+            embedding = np.array(self.model.encode([chunk for chunk in wu.chunker(f"./captions/{file}", 5, 0.5)]))
+            pca = decomposition.PCA(n_components = 4)
+            pca.fit(embedding)
+            X = pca.transform(embedding).mean(axis=0)
+
+            self.x = np.concatenate([self.x, np.expand_dims(X[0], axis=0)], axis=0)
+            self.y = np.concatenate([self.y, np.expand_dims(X[1], axis=0)], axis=0)
+            self.z = np.concatenate([self.z, np.expand_dims(X[2], axis=0)], axis=0)
+            self.value = np.concatenate([self.value, np.expand_dims(X[3], axis=0)], axis=0)
+            self.bubbles.mlab_source.reset(x=self.x, y=self.y, z=self.z, scalars=self.value)
+            # arms.mlab_source.reset(x=x, y=y, z=z, scalars=value)
+            yield
+
+    def runVisual(self) -> None:
+        self.setup()
+        self.anim()
+        mlab.show()
+
+    
+# global bubbles
+
+# # Clear the figure
+# mlab.clf()
+
+# def setup():
+#     x, y, z, value = np.random.random((4, 2))
+#     bubbles = mlab.points3d(x, y, z, value)
+#     # arms = mlab.plot3d(x, y, z, value)
+#     return x, y, z, value
 
 
+# @mlab.animate(delay=100)
+# def anim(x, y, z, value):
+
+#     for i in range (1000):
+#         (x, y, z, value) = [np.concatenate([i, np.random.random((1,))], axis=0) for i in (x, y, z, value)]
+#         bubbles.mlab_source.reset(x=x, y=y, z=z, scalars=value)
+#         # arms.mlab_source.reset(x=x, y=y, z=z, scalars=value)
+#         yield
+
+
+
+# x, y, z, value = setup()
+# anim(x, y, z, value)
 # mlab.show()
 
 
-
-
-@mlab.animate(delay=100)
-def anim():
-    x, y, z, value = np.random.random((4, 1))
-    bubbles = mlab.points3d(x, y, z, value)
-
-    for i in range (1000):
-        (x, y, z, value) = [np.concatenate([i, np.random.random((1,))], axis=0) for i in (x, y, z, value)]
-        bubbles.mlab_source.reset(x=x, y=y, z=z, scalars=value)
-        yield
-
-
-anim()
-mlab.show()
+viz = visualAPI()
+viz.runVisual()
