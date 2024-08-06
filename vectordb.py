@@ -1,6 +1,6 @@
 from docarray import BaseDoc
 from docarray.typing import NdArray
-from vectordb import InMemeoryExactNNVectorDB
+from vectordb import InMemoryExactNNVectorDB
 
 class wocSchema(BaseDoc):
     id: str = ''
