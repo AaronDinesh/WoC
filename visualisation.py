@@ -42,11 +42,12 @@ class visualAPI:
         def animate(files=files,x=x, y=y, z=z, value=value, bubbles=bubbles):
             for file in self.files:
                 x = np.concatenate([x, np.random.random((1,))], axis=0)
-                y = np.concatenate([y,np.random.random((1,))], axis=0)
+                y = np.concatenate([y, np.random.random((1,))], axis=0)
                 z = np.concatenate([z, np.random.random((1,))], axis=0)
-                value = np.concatenate([value, np.random.random((1,))], axis=0)
+                value = np.concatenate([value, 0.2*np.random.random((1,))], axis=0)
                 bubbles.mlab_source.reset(x=x, y=y, z=z, scalars=value)
                 # arms.mlab_source.reset(x=x, y=y, z=z, scalars=value)
+                # print(x, y, z, value)
                 yield
 
         return animate
