@@ -11,18 +11,21 @@ from functools import partial
 # TODO: Change this to only be graphing
 class visualAPI:
     def __init__(self) -> None:
-        self.bubbles = None
-        self.x = None
-        self.y = None
-        self.z = None
-        self.value = None
+        np.random.seed(0)
         self.files = listdir("./captions/")
-        self.figure = mlab.figure('Visualizer')
+        self.figure = mlab.figure(figure='Visualizer', bgcolor=self.rgb2unit((0, 0, 0)), fgcolor=self.rgb2unit((255, 255, 255)))
+        self.coords = np.random.random((len(self.files), 3))
+        self.colors = np.random.random(len(self.files))
+        self.bubbles = mlab.points3d(self.coords[:, 0], self.coords[:, 1], self.coords[:, 2])
+        self.bubbles.glyph.scale_mode = 'scale_by_vector'
+        self.bubbles.mlab_source.dataset.point_data.scalars = self.colors
         # self.model = SentenceTransformer("all-MiniLM-L6-v2")
+    def rgb2unit(self, rgb: tuple[int, int, int]) -> tuple[float, float, float]:
+        return tuple(x / 255 for x in rgb)
 
-    def test(self):
-        print("Hello from API")
-    
+    def unit2rgb(self, unit: tuple[float, float, float]) -> tuple[int, int, int]:
+        return tuple(int(x * 255) for x in unit)
+
     def setup(self)-> None:
         # Clear the figure
         mlab.clf()
@@ -31,21 +34,18 @@ class visualAPI:
         self.bubbles = mlab.points3d(self.x, self.y, self.z, self.value)
 
     def __anim(self) -> None:
-        files = self.files
-        x = self.x
-        y = self.y
-        z = self.z
-        value = self.value
         bubbles = self.bubbles
-        
+        coords = self.coords
+        velocity = np.random.random(self.coords.shape)
         @mlab.animate(delay=100)
-        def animate(files=files,x=x, y=y, z=z, value=value, bubbles=bubbles):
-            for file in self.files:
-                x = np.concatenate([x, np.random.random((1,))], axis=0)
-                y = np.concatenate([y, np.random.random((1,))], axis=0)
-                z = np.concatenate([z, np.random.random((1,))], axis=0)
-                value = np.concatenate([value, 0.2*np.random.random((1,))], axis=0)
-                bubbles.mlab_source.reset(x=x, y=y, z=z, scalars=value)
+        def animate(coords=coords, bubbles=bubbles, velocity=velocity):
+            iter = 0
+            while 1:
+                coords += np.where(coords > 10.0, -1, 1) * velocity / 10
+                bubbles.mlab_source.points = coords
+                mlab.gcf().scene.render()
+                print(f"Iteration: {iter}")
+                iter += 1
                 # arms.mlab_source.reset(x=x, y=y, z=z, scalars=value)
                 # print(x, y, z, value)
                 yield
@@ -53,7 +53,6 @@ class visualAPI:
         return animate
 
     def runVisual(self) -> None:
-        self.setup()
         animation = self.__anim()
         animation()
         mlab.show()
