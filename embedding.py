@@ -1,71 +1,63 @@
 import os
-import sys
 import woc_utils as wu
 from sentence_transformers import SentenceTransformer
-import matplotlib.pyplot as plt
-
-# unused but required import for doing 3d projections with matplotlib < 3.2
-import mpl_toolkits.mplot3d  # noqa: F401
-from matplotlib import cm
 import numpy as np
-from sklearn import decomposition
+from tqdm import tqdm
+import json
+from multiprocessing import Process, Queue, cpu_count
+import time
 
-def set_axes_equal(ax):
-    '''Make axes of 3D plot have equal scale so that spheres appear as spheres,
-    cubes as cubes, etc..  This is one possible solution to Matplotlib's
-    ax.set_aspect('equal') and ax.axis('equal') not working for 3D.
+def split_files(files:list[str], n:int) ->list[list[str]]:
+    length = len(files)
+    chunk_size = length // n
+    remainder = length % n  
+    
+    result = []
+    start = 0
 
-    Input
-      ax: a matplotlib axis, e.g., as output from plt.gca().
+    for i in tqdm(range(n), desc="Spliting files for threads"):
+        end = start + chunk_size + (1 if remainder else 0)
+        result.append(files[start:end])
+        start = end
 
-    source: https://stackoverflow.com/questions/13685386/matplotlib-equal-unit-length-with-equal-aspect-ratio-z-axis-is-not-equal-to
-    '''
+    return result
 
-    x_limits = ax.get_xlim3d()
-    y_limits = ax.get_ylim3d()
-    z_limits = ax.get_zlim3d()
-
-    x_range = abs(x_limits[1] - x_limits[0])
-    x_middle = np.mean(x_limits)
-    y_range = abs(y_limits[1] - y_limits[0])
-    y_middle = np.mean(y_limits)
-    z_range = abs(z_limits[1] - z_limits[0])
-    z_middle = np.mean(z_limits)
-
-    # The plot bounding box is a sphere in the sense of the infinity
-    # norm, hence I call half the max range the plot radius.
-    plot_radius = 0.5*max([x_range, y_range, z_range])
-
-    ax.set_xlim3d([x_middle - plot_radius, x_middle + plot_radius])
-    ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
-    ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
-
-
-chunks = [chunk for chunk in wu.chunker("./captions/l0e9i8zXcIs.txt", 200, 0.5)]
-
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
-embeddings = model.encode(chunks)
-pca = decomposition.PCA(n_components = 3)
-pca.fit(embeddings)
-X = pca.transform(embeddings)
-X = X / np.expand_dims(np.linalg.norm(X, axis=1), axis=1)
-X_angles = np.arctan2(np.sqrt(X[:, 0]**2 + X[:, 1]**2), X[:, 2])
-cmap = cm.viridis
-norm = plt.Normalize(X_angles.min(), X_angles.max())
-
-
-plt.style.use('dark_background')
-fig = plt.figure()
-ax = plt.axes(projection="3d")
-plt.autoscale(axis='z')
-origin = np.zeros((len(embeddings)))
-ax.quiver(origin, origin, origin ,X[:, 0], X[:, 1], X[:, 2], 
-          colors=cmap(norm(X_angles.flatten())), linewidth=2.5, capstyle='round')
-ax.scatter(X[:, 0], X[:, 1], X[:, 2], alpha=0)
-set_axes_equal(ax)
-plt.show()
+def embed_files_threaded(data:tuple[id:int, list[str]], completed_queue):
+    id = data[0]
+    files = data[1]
+    print(f"Thread {id}: Starting...")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    embedding_dict = {}
+    for file in files:
+        chunks = [chunk for chunk in wu.chunker(f"./captions/{file}", 200, 0.5)]
+        embedding = np.array(model.encode(chunks))
+        embedding_dict[file] = embedding.mean(axis=0).tolist()
+    print(f"Thread {id}: Completed work. Exiting...")
+    completed_queue.put(embedding_dict)
 
 
 
+if __name__ == "__main__":
+    embeddings_dict = {}
+    NUM_WORKERS = cpu_count()
+    print(f"Using {NUM_WORKERS} processes...")
+    split_files = split_files(os.listdir("./captions"), NUM_WORKERS)
+
+    completed_queue = Queue()
+    processes = []
+    start = time.time()
+    for i in enumerate(split_files):
+        p = Process(target=embed_files_threaded, args=(i, completed_queue,))
+        p.start()
+        processes.append(p)
+    
+    for p in processes:
+        embeddings_dict.update(completed_queue.get())
+
+    for p in processes:
+        p.join()
+    print(f"Threaded Time: {time.time()-start}")
+
+    with open("./embeddings.json", "w") as f:
+        json.dump(embeddings_dict, f)
 
