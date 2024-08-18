@@ -1,0 +1,4 @@
+repository "WoC@seaSharkey@cloud"
+  path "/"
+    br "/main"
+    co "/main"
