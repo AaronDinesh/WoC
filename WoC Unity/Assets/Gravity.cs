@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Gravity : MonoBehaviour
 {
-    public static float G = 1.0f;
+    public float G = 13.34f;
 
     public Rigidbody attractor;
     public Rigidbody target;
@@ -18,13 +18,13 @@ public class Gravity : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        AddGravityForce(attractor, target);
+        AddGravityForce(attractor, target, G);
     }
 
 
-    public static void AddGravityForce(Rigidbody attractor, Rigidbody target)
+    public static void AddGravityForce(Rigidbody attractor, Rigidbody target, float G)
     {
-        float massProduct = attractor.mass*target.mass*G;
+        float massProduct = attractor.mass*target.mass;
 
         //You could also do
         //float distance = Vector3.Distance(attractor.position,target.position.
@@ -34,7 +34,7 @@ public class Gravity : MonoBehaviour
         //F = G * ((m1*m2)/r^2)
         // float unScaledforceMagnitude = massProduct/Mathf.Pow(distance,2);
 
-        float unScaledforceMagnitude = massProduct;
+        float unScaledforceMagnitude = massProduct/Mathf.Pow(distance, 2);
         float forceMagnitude = G*unScaledforceMagnitude;
 
         Vector3 forceDirection = difference.normalized;
