@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class Gravity : MonoBehaviour
 {
-    public float G = 1.0f;
+    public float G = 5.0f;
     public Rigidbody attractor;
     public Rigidbody target;
 
      // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
