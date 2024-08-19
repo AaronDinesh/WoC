@@ -9,28 +9,32 @@ using UnityEditor;
 
 public class Replusion : MonoBehaviour
 {
-    public float G = 6.67f;
-
+    public float G = 1.0f;
     public Rigidbody repeller;
     public Rigidbody target;
+
+    List<Vector3> embeddings = new List<Vector3>();
+
      // Start is called before the first frame update
     void Start()
     {
-        
+        embeddings.Add(repeller.position);
+        embeddings.Add(target.position);         
     }
 
     // Update is called once per frame
     void Update()
     {
-        AddRepulsionForce(repeller, target, G);
+        AddRepulsionForce(repeller, target, embeddings, G);
     }
 
 
-    public static void AddRepulsionForce(Rigidbody repeller, Rigidbody target, float G)
+    public static void AddRepulsionForce(Rigidbody repeller, Rigidbody target, List<Vector3> embeddings, float G)
     {
-        float massProduct = repeller.mass*target.mass;
+        // float massProduct = repeller.mass*target.mass;
+        float massProduct = Vector3.Dot(embeddings[0], embeddings[1]);
 
-        //You could also do
+
         //float distance = Vector3.Distance(repeller.position,target.position.
         Vector3 difference = repeller.position - target.position;
         float distance = difference.magnitude; // r = Mathf.Sqrt((x*x)+(y*y))
@@ -43,6 +47,6 @@ public class Replusion : MonoBehaviour
 
         Vector3 forceVector = forceDirection*forceMagnitude;
 
-        target.AddForce(-1*forceVector);
+        target.AddForce(forceVector);
     }
 }
