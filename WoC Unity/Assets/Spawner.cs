@@ -11,7 +11,7 @@ public class Spawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        for (int i=0; i < 100; i++)
+        for (int i=0; i < 150; i++)
         {
             float x = Random.Range(-40.0f, 40.0f);
             float y = Random.Range(-40.0f, 40.0f);

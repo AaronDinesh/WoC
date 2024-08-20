@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Gravity : MonoBehaviour
 {
-    public float G = 5.0f;
+    public float G = 8.0f;
     public Rigidbody attractor;
     public Rigidbody target;
 
@@ -31,7 +31,7 @@ public class Gravity : MonoBehaviour
         Vector3 difference = attractor.position - target.position;
         float distance = difference.magnitude; // r = Mathf.Sqrt((x*x)+(y*y))
 
-        if (distance >= 10.0f) {
+        if (distance >= 15.0f) {
             //F = G * ((m1*m2)/r^2)
             // float unScaledforceMagnitude = massProduct/Mathf.Pow(distance,2);
 
