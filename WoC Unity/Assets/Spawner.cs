@@ -39,6 +39,7 @@ public class Spawner : MonoBehaviour
             // Loop through each Sphere
             if (go.name == "Sphere(Clone)")
             {
+                
                 Gravity scriptGravity = go.AddComponent<Gravity>(); // Add gravity to center
                 scriptGravity.attractor = GameObject.Find("Center").GetComponent<Rigidbody>();
                 scriptGravity.target = go.GetComponent<Rigidbody>();

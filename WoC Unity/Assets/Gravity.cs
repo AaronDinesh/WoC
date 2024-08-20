@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Gravity : MonoBehaviour
 {
-    public float G = 8.0f;
+    public float G = 7.0f;
     public Rigidbody attractor;
     public Rigidbody target;
 
