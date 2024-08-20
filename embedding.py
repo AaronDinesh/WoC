@@ -31,7 +31,8 @@ def embed_files_threaded(data:tuple[id:int, list[str]], completed_queue):
     for file in files:
         chunks = [chunk for chunk in wu.chunker(f"./captions/{file}", 200, 0.5)]
         embedding = np.array(model.encode(chunks))
-        embedding_dict[file] = embedding.mean(axis=0).tolist()
+        # -4 so that we strip the .txt, leaving just the video id 
+        embedding_dict[file[:-4]] = embedding.mean(axis=0).tolist()
     print(f"Thread {id}: Completed work. Exiting...")
     completed_queue.put(embedding_dict)
 
@@ -58,6 +59,6 @@ if __name__ == "__main__":
         p.join()
     print(f"Threaded Time: {time.time()-start}")
 
-    with open("./embeddings.json", "w") as f:
+    with open("./WoC Unity/Assets/StreamingAssets/embeddings.json", "w") as f:
         json.dump(embeddings_dict, f)
 
