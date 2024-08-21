@@ -25,9 +25,9 @@ public class Spawner : MonoBehaviour
         
         for (int i=0; i < embeddings.Count; i++)
         {
-            float x = Random.Range(-40.0f, 40.0f);
-            float y = Random.Range(-40.0f, 40.0f);
-            float z = Random.Range(-40.0f, 40.0f);
+            float x = Random.Range(-10.0f, 10.0f);
+            float y = Random.Range(-10.0f, 10.0f);
+            float z = Random.Range(-10.0f, 10.0f);
             Vector3 spawnPos = new Vector3(x, y, z);
 
             Instantiate(spherePrefab, spawnPos, Quaternion.identity);
