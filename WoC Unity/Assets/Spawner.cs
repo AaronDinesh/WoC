@@ -57,8 +57,10 @@ public class Spawner : MonoBehaviour
                     if (gameObj.name == "Sphere(Clone)" && gameObj != go)
                     {
                         Repulsion scriptRepulsion = go.AddComponent<Repulsion>();
-                        scriptRepulsion.repeller = gameObj.GetComponent<Rigidbody>();
-                        scriptRepulsion.target = go.GetComponent<Rigidbody>();
+                        scriptRepulsion.repeller = gameObj;
+                        scriptRepulsion.target = go;
+                        // scriptRepulsion.repeller = gameObj.GetComponent<Rigidbody>();
+                        // scriptRepulsion.target = go.GetComponent<Rigidbody>();
                     }
                 }
             }
