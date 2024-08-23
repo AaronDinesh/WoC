@@ -18,8 +18,8 @@ public class CameraMovement : MonoBehaviour
     void Start()
     {
         targetPosition = transform.position;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        //Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true;
     }
 
     void Update()
