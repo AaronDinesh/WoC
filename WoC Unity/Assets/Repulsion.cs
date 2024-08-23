@@ -27,21 +27,24 @@ public class Repulsion : MonoBehaviour
         }
     }
 
-    void ColorTargets(){
+    void ColorTargets()
+    {
+        Material newMaterialGreen = new Material(Shader.Find("Standard"));
+        newMaterialGreen.color = new Color(0, 255, 0, 1);
+
+        Material newMaterialRed = new Material(Shader.Find("Standard"));
+        newMaterialRed.color = new Color(255, 0, 0, 1);        
         
-        
-        for(int i = 0; i < targets.Count; i++){
+        for(int i = 0; i < targets.Count; i++)
+        {
             MeshRenderer meshRendererTarget = targets[i].GetComponent<MeshRenderer>();
-            Material newMaterialTarget = new Material(Shader.Find("Standard"));
         
 
 
             if(dotProducts[i] > 0){
-                newMaterialTarget.color = new Color(0, 255, 0, 1);
-                meshRendererTarget.material = newMaterialTarget;
+                meshRendererTarget.material = newMaterialGreen;
             }else if(dotProducts[i] < 0){
-                newMaterialTarget.color = new Color(255, 0, 0, 1);
-                meshRendererTarget.material = newMaterialTarget;
+                meshRendererTarget.material = newMaterialRed;
             }
         }
     }
