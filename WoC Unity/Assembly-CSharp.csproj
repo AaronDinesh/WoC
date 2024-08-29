@@ -68,6 +68,7 @@
     <Compile Include="Assets\CameraMovement.cs" />
     <Compile Include="Assets\VideoProperties.cs" />
     <Compile Include="Assets\Gravity.cs" />
+    <Compile Include="Assets\ArrowGenerator.cs" />
     <Compile Include="Assets\Spawner.cs" />
   </ItemGroup>
   <ItemGroup>
